@@ -1,0 +1,9 @@
+services:
+    scfr.WSBB.Listener:
+        class: scfr\WSBB\event\Listener
+        arguments:
+            - '@template'
+            - '@user'
+            - '@dbal.conn'
+        tags:
+          - { name: event.Listener }

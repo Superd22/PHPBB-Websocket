@@ -1,0 +1,28 @@
+{
+	"name": "scfr/WSBB",
+	"type": "phpbb-extension",
+	"description": "PHPBB Websocket server",
+	"homepage": "",
+	"version": "0.1.0",
+	"time": "2016-13-06",
+	"license": "GPL-2.0",
+	"authors": [{
+			"name": "David FAIN - Super d",
+			"email": "contact@starcitizen.fr",
+			"homepage": "starcitizen.fr",
+			"role": "Lead Developer"
+		}],
+	"require": {
+		"php": ">=7.0",
+		"composer/installers": "~1.0"
+	},
+	"require-dev": {
+		"phpbb/epv": "dev-master"
+	},
+	"extra": {
+		"display-name": "PHPBB-WEBSOCKET",
+		"soft-require": {
+			"phpbb/phpbb": ">=3.2.0-RC1,<3.3"
+		}
+	}
+}
