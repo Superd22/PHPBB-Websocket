@@ -2,25 +2,33 @@
 	"name": "scfr/WSBB",
 	"type": "phpbb-extension",
 	"description": "PHPBB Websocket server",
-	"homepage": "",
 	"version": "0.1.0",
 	"time": "2016-13-06",
 	"license": "GPL-2.0",
-	"authors": [{
+	"authors": [
+		{
 			"name": "David FAIN - Super d",
 			"email": "contact@starcitizen.fr",
-			"homepage": "starcitizen.fr",
+			"homepage": "http://www.starcitizen.fr",
 			"role": "Lead Developer"
-		}],
+		}
+	],
+	"autoload": {
+		"psr-4": {
+			"scfr\\WSBB\\": ["./"]
+		}
+	},
 	"require": {
 		"php": ">=7.0",
-		"composer/installers": "~1.0"
+		"composer/installers": "~1.0",
+		"cboden/ratchet": "0.3.*",
+		"php-ds/php-ds": "~1.1.1"
 	},
 	"require-dev": {
 		"phpbb/epv": "dev-master"
 	},
 	"extra": {
-		"display-name": "PHPBB-WEBSOCKET",
+		"display-name": "PHPBB Websocket Event Server",
 		"soft-require": {
 			"phpbb/phpbb": ">=3.2.0-RC1,<3.3"
 		}
