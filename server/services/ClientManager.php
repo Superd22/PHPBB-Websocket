@@ -38,10 +38,33 @@ class ClientManager {
     * @return void
     */
     public function new_conn(ConnectionInterface $conn) {
-        $u = $this->users->get(1);
+        global $config;
         
+        // acknowledge connection
+        $conn->send(1);
+        
+        // Attach to un-authorized temporary
+        $u = $this->users->get(1);
         $this->conn->attach($conn, 1);
         $u->attach_conn($conn);
+        
+        $cookies = $conn->WebSocket->request->getCookies();
+        $user_id = $session_id = 1;
+        
+        // Check cookie
+        if(!empty($cookies[$config['cookie_name'].'_u'] && !empty($cookies[$config['cookie_name'].'_sid']))) {
+            
+            $user_id = $cookies[ $config['cookie_name'] . '_u' ];
+            $session_id = $cookies[ $config['cookie_name'] . '_sid' ];
+            
+        }
+        
+        $identify = new server\models\IdentifyPacket([
+        "user_id" => $user_id,
+        "session_id" => $session_id,
+        ]);
+        
+        $this->auth_conn($conn, $identify);
     }
     
     /**
@@ -59,6 +82,7 @@ class ClientManager {
         $this->detach_conn_from_client($client, $conn);
         // No longer using this conn
         $this->conn->detach($conn);
+        
     }
     
     /**
@@ -96,9 +120,11 @@ class ClientManager {
     */
     private function detach_conn_from_client(server\client\WSClient $client, ConnectionInterface $conn) {
         // Detach this conn and check if we still need this user
+        echo "Detached conn ({$conn->resourceId}) from user ({$client->get_user_id()}) \n";
         if($client->detach_conn($conn)) {
             // Garbage collect
-            $this->users->remove($user_id);
+            if($client->get_user_id() > 0) $this->users->remove($client->get_user_id());
+            echo "Removed user({$client->get_user_id()}) \n";
         }
     }
     
@@ -110,7 +136,8 @@ class ClientManager {
     */
     private function attach_conn_to_client(server\client\WSClient $client, ConnectionInterface $conn) {
         $this->users->put($client->get_user_id(), $client);
-        $client->attach($conn);
+        $client->attach_conn($conn);
+        echo "Attached conn ({$conn->resourceId}) to ({$client->get_user_id()}) \n";
     }
     
     /**
@@ -148,19 +175,22 @@ class ClientManager {
     * @return void
     */
     private function move_conn(ConnectionInterface $conn, $new_user_id) {
+        
         $old_user_id = $this->conn[$conn];
         
         // Check conn exists
         if(empty($old_user_id)) throw new \Exception("Tried moving a conn that wasn't previously assigned to a client");
-        if($old_user_id == $user_id) return true;
+        if($old_user_id == $new_user_id) return true;
         
         // Check conn was assigned to a client
         $old_client = $this->users->get($old_user_id);
         if(empty($old_client)) throw new \Exception("Tried moving a conn that was assigned to a non-existant client");
         
         // Get the new target for the move
-        $new_client = $this->users->get($new_user_id);
-        if(empty($new_client)) {
+        try {
+            $new_client = $this->users->get($new_user_id);
+        }
+        catch(\Exception $e) {
             $new_client = new server\client\WSClient($new_user_id);
         }
         

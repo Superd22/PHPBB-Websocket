@@ -44,14 +44,8 @@ class EventServer implements MessageComponentInterface {
     }
     
     public function onMessage(ConnectionInterface $from, $msg) {
-        $packet = InputHandler::decode($msg);
-        
-        if($packet->type == "auth") {
-            $identify = new models\IdentifyPacket($packet->data);
-            $this->client_manager->auth_conn($conn, $identify);
-        }
-
-
+        print_r($from->WebSocket->request->getCookies());
+        var_dump($msg);
     }
     
     public function onClose(ConnectionInterface $conn) {
@@ -61,6 +55,7 @@ class EventServer implements MessageComponentInterface {
     }
     
     public function onError(ConnectionInterface $conn, \Exception $e) {
+        print_r($e->getTraceAsString());
         echo "An error has occurred: {$e->getMessage()}\n";
         
         $conn->close();
