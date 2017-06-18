@@ -1,4 +1,4 @@
-<?php namespace scfr\WSBB\server\interfaces;
+<?php namespace scfr\WSBB\server\models;
 
 class IdentifyPacket {
   public $user_id;

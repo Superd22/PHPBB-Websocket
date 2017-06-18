@@ -44,7 +44,7 @@ class WSClient {
      * @param ConnectionInterface $conn
      */
     public function attach_conn(ConnectionInterface $conn) {
-        $conn->attach($conn);
+        $this->conn->attach($conn);
     }
     
     /**
@@ -55,7 +55,7 @@ class WSClient {
      * @return boolean if this client still has active conns or not.
      */
     public function detach_conn(ConnectionInterface $conn) {
-        $conn->detach($conn);
+        $this->conn->detach($conn);
         return ($this->conn->count() > 0);
     }
     

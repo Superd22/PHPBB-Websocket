@@ -2,10 +2,10 @@
 
 use Ratchet\MessageComponentInterface;
 use Ratchet\ConnectionInterface;
-use scfr\WSBB\server;
+use scfr\WSBB\server as server;
 
 
-class ClientManager extends SingletonService {
+class ClientManager {
     
     /**
     * Undocumented variable
@@ -15,11 +15,20 @@ class ClientManager extends SingletonService {
     protected $users;
     protected $conn;
     
-    private function __construct() {
-        parent::__construct();
-        
-        $users = new \Ds\Map();
+    public function __construct() {
+        $this->users = new \Ds\Map();
+        $this->conn = new \SplObjectStorage();
+        $this->users->put(1, new server\client\WSClient(0));
     }
+    
+    public function get_users() {
+        return $this->users;
+    }
+    
+    public function get_conns() {
+        return $this->conn;
+    }
+    
     
     /**
     * Will add a new connection to our cache
@@ -58,14 +67,14 @@ class ClientManager extends SingletonService {
     * a logged-in user.
     *
     * @param ConnectionInterface $conn
-    * @param IdentifyPacket $identify
+    * @param server\models\IdentifyPacket $identify
     * @return void
     */
-    public function auth_conn(ConnectionInterface $conn, IdentifyPacket $identify) {
+    public function auth_conn(ConnectionInterface $conn, server\models\IdentifyPacket $identify) {
         // We want to un-log this conn, no probs.
         if($identify->user_id === 1) {
             $this->move_conn($conn, 1);
-
+            
             return true;
         }
         // We want to log in to a specified user and we're authorized to do so, do it.
@@ -73,7 +82,7 @@ class ClientManager extends SingletonService {
             $this->move_conn($conn, $identify->user_id);
             return true;
         }
-
+        
         // We did not perform anything.
         return false;
     }
@@ -85,7 +94,7 @@ class ClientManager extends SingletonService {
     * @param client\WSClient $client
     * @param ConnectionInterface $conn
     */
-    private function detach_conn_from_client(client\WSClient $client, ConnectionInterface $conn) {
+    private function detach_conn_from_client(server\client\WSClient $client, ConnectionInterface $conn) {
         // Detach this conn and check if we still need this user
         if($client->detach_conn($conn)) {
             // Garbage collect
@@ -99,18 +108,18 @@ class ClientManager extends SingletonService {
     * @param client\WSClient $client
     * @param ConnectionInterface $conn
     */
-    private function attach_conn_to_client(client\WSClient $client, ConnectionInterface $conn) {
-        $this->users->set($client->get_user_id(), $client);
+    private function attach_conn_to_client(server\client\WSClient $client, ConnectionInterface $conn) {
+        $this->users->put($client->get_user_id(), $client);
         $client->attach($conn);
     }
     
     /**
     * Check wether a given identify packet is a valid & authed one
     *
-    * @param IdentifyPacket $identify the packet to check
+    * @param server\models\IdentifyPacket $identify the packet to check
     * @return boolean
     */
-    private function check_identity(IdentifyPacket $identify) {
+    private function check_identity(server\models\IdentifyPacket $identify) {
         global $db;
         
         $sql = 'SELECT u.*, s.*
@@ -152,7 +161,7 @@ class ClientManager extends SingletonService {
         // Get the new target for the move
         $new_client = $this->users->get($new_user_id);
         if(empty($new_client)) {
-            $new_client = new client\WSClient($new_user_id);
+            $new_client = new server\client\WSClient($new_user_id);
         }
         
         // Perform the move
@@ -164,7 +173,7 @@ class ClientManager extends SingletonService {
     * Alias of auth_conn
     * @see auth_conn
     */
-    public function un_auth_conn(ConnectionInterface $conn, $identity) {
+    public function un_auth_conn(ConnectionInterface $conn, server\models\IdentifyPacket $identity) {
         return $this->auth_conn($conn, $identity);
     }
 }

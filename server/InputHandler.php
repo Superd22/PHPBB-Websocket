@@ -1,9 +1,9 @@
 <?php namespace scfr\WSBB\server;
 
-use Ratchet\MessageComponentInterface;
-use Ratchet\ConnectionInterface;
-
-
 class InputHandler {
-    
+
+    public static function decode($data) {
+        return new models\WSInputPacket(json_decode($data,true));
+    }
+
 }

@@ -25,7 +25,8 @@
 		"php-ds/php-ds": "~1.1.1"
 	},
 	"require-dev": {
-		"phpbb/epv": "dev-master"
+		"phpbb/epv": "dev-master",
+		"phpunit/phpunit": "^6.1"
 	},
 	"extra": {
 		"display-name": "PHPBB Websocket Event Server",

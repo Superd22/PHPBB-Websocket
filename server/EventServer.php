@@ -15,7 +15,7 @@ class EventServer implements MessageComponentInterface {
     public function __construct() {
         $this->make_phpbb_env();
         
-        $this->client_manager = services\ClientManager::get_service();
+        $this->client_manager = new services\ClientManager();
     }
     
     /**
@@ -44,7 +44,14 @@ class EventServer implements MessageComponentInterface {
     }
     
     public function onMessage(ConnectionInterface $from, $msg) {
+        $packet = InputHandler::decode($msg);
         
+        if($packet->type == "auth") {
+            $identify = new models\IdentifyPacket($packet->data);
+            $this->client_manager->auth_conn($conn, $identify);
+        }
+
+
     }
     
     public function onClose(ConnectionInterface $conn) {
