@@ -23,7 +23,7 @@ class ClientManager {
     private function __construct() {
         $this->users = new \Ds\Map();
         $this->conn = new \SplObjectStorage();
-        $this->users->put(1, new server\client\WSClient(0));
+        $this->users->put(1, new server\client\WSClient(1));
     }
     
     
@@ -134,7 +134,7 @@ class ClientManager {
         echo "[CLIENT] Detached conn ({$conn->resourceId}) from user ({$client->get_user_id()}) \n";
         if(!$client->detach_conn($conn)) {
             // Garbage collect
-            if($client->get_user_id() > 0) {
+            if($client->get_user_id() > 1)  {
                 $this->users->remove($client->get_user_id());
                 echo "[CLIENT] Removed user({$client->get_user_id()}) \n";
             }

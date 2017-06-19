@@ -38,9 +38,9 @@ class WSClient {
     /**
     * @param integer $user_id the userid for this client
     */
-    public function __construct($user_id = 0) {
+    public function __construct($user_id = 1) {
         $this->user_id = $user_id;
-        if($this->user_id > 0) $this->authed = true;
+        if($this->user_id > 1) $this->authed = true;
         
         $this->conn = new \SplObjectStorage;
         
@@ -52,7 +52,9 @@ class WSClient {
     */
     private function init_auth() {
         $this->auth = new PhpbbAuth();
-        $this->auth->acl($this->auth->obtain_user_data($this->user_id));
+        $udata = $this->auth->obtain_user_data($this->user_id);
+        
+        $this->auth->acl($udata);
     }
     
     /**
@@ -98,6 +100,7 @@ class WSClient {
     * @param mixed $data
     */
     public function broadcast_data($data) {
+        echo "[WSClient] Broadcasting data to user ({$this->get_user_id()}) \n";
         foreach($this->conn as $conn) {
             $conn->send($data);
         }

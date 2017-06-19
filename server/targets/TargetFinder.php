@@ -12,10 +12,14 @@ abstract class TargetFinder {
     * @var services\ClientManager
     */
     protected $client_manager;
-    private $packet;
+    protected $in_packet;
+    private $out_packet;
     
-    public function __construct() {
+    public function __construct(server\models\WSInputPacket $packet) {
         $this->client_manager = server\services\ClientManager::get_service();
+
+        $this->in_packet = $packet;
+        $this->make_packet($packet->type, $packet->data);
     }
     
     protected function make_packet($event_name = "default_event", $event_data = "") {
@@ -47,19 +51,12 @@ abstract class TargetFinder {
      * Main method to find targets and send them event if they have the required permission(s)
      * @return void
      */
-    protected function target_find() {
+    public function target_find() {
         $users = $this->client_manager->get_users();
 
-        $first = true;
-        $sendAll = false;
-
+        $sendAll = $this->perform_check_on_first_client();
         foreach($users as $user) {
-            if($first) {
-                if($this->perfom_check_on_client($client)) $sendAll = true;
-                $first = false;
-            }
-
-            if($sendAll || $this->perfom_check_on_client($client)) $this->send_event_to_client($client);
+            if($sendAll || ( $user->get_user_id() != 1 && $this->perfom_check_on_client($user) ) ) $this->send_event_to_client($user);
         }
     }
     

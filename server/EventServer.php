@@ -60,9 +60,16 @@ class EventServer implements MessageComponentInterface {
     }
 
     public function onPhpbbPacket($data) {
-        echo "[PHPBB] Got PHPBB Update";
+        echo "[PHPBB] Got PHPBB Update \n";
         $packet = new models\WSInputPacket(json_decode($data, true));
 
+        switch($packet->type) {
+            case "PHPBB_POSTING":
+                $target = new targets\TargetFinderPosting($packet);
+            break;
+        }
+
+        if($target) $target->target_find();
         
     }
 }

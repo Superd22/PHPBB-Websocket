@@ -1,16 +1,15 @@
 <?php namespace scfr\wsbb\server\targets;
 
-use scfr\wsbb\server;
+use scfr\wsbb\server as server;
 
 /**
  * Target finder for a posting type event from phpb
  * (ie new thread / reply / edit)
  */
 class TargetFinderPosting extends TargetFinder {
-  
-    public function __construct($) {
-        parent::__construct();
-        $this->make_packet("phpbb_posting", )
-    }    
+    
+    protected function perfom_check_on_client(server\client\WSClient $client) {
+        return $client->get_auth()->acl_get("f_read", $this->in_packet->data["post"]["forum_id"]);
+    }
     
 }
