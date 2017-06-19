@@ -14,8 +14,7 @@ class EventServer implements MessageComponentInterface {
     
     public function __construct() {
         $this->make_phpbb_env();
-        
-        $this->client_manager = new services\ClientManager();
+        $this->client_manager = services\ClientManager::get_service();
     }
     
     /**
@@ -38,9 +37,8 @@ class EventServer implements MessageComponentInterface {
     }
     
     public function onOpen(ConnectionInterface $conn) {
+        echo "[CLIENT] New connection! ({$conn->resourceId})\n";
         $this->client_manager->new_conn($conn);
-        
-        echo "New connection! ({$conn->resourceId})\n";
     }
     
     public function onMessage(ConnectionInterface $from, $msg) {
@@ -49,15 +47,22 @@ class EventServer implements MessageComponentInterface {
     }
     
     public function onClose(ConnectionInterface $conn) {
+        echo "[CLIENT] Connection {$conn->resourceId} has disconnected\n";
+
         $this->client_manager->remove_conn($conn);
         
-        echo "Connection {$conn->resourceId} has disconnected\n";
     }
     
     public function onError(ConnectionInterface $conn, \Exception $e) {
-        print_r($e->getTraceAsString());
-        echo "An error has occurred: {$e->getMessage()}\n";
+        echo "[CLIENT] An error has occurred: {$e->getMessage()}\n";
         
         $conn->close();
+    }
+
+    public function onPhpbbPacket($data) {
+        echo "[PHPBB] Got PHPBB Update";
+        $packet = new models\WSInputPacket(json_decode($data, true));
+
+        
     }
 }

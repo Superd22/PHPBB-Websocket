@@ -14,11 +14,22 @@ class ClientManager {
     */
     protected $users;
     protected $conn;
+    /**
+    * Instance of the singleton service
+    * @var ClientManager
+    */
+    private static $_instance;
     
-    public function __construct() {
+    private function __construct() {
         $this->users = new \Ds\Map();
         $this->conn = new \SplObjectStorage();
         $this->users->put(1, new server\client\WSClient(0));
+    }
+    
+    
+    public function get_service() {
+        if(!self::$_instance) self::$_instance = new ClientManager();
+        return self::$_instance;
     }
     
     public function get_users() {
@@ -120,11 +131,13 @@ class ClientManager {
     */
     private function detach_conn_from_client(server\client\WSClient $client, ConnectionInterface $conn) {
         // Detach this conn and check if we still need this user
-        echo "Detached conn ({$conn->resourceId}) from user ({$client->get_user_id()}) \n";
-        if($client->detach_conn($conn)) {
+        echo "[CLIENT] Detached conn ({$conn->resourceId}) from user ({$client->get_user_id()}) \n";
+        if(!$client->detach_conn($conn)) {
             // Garbage collect
-            if($client->get_user_id() > 0) $this->users->remove($client->get_user_id());
-            echo "Removed user({$client->get_user_id()}) \n";
+            if($client->get_user_id() > 0) {
+                $this->users->remove($client->get_user_id());
+                echo "[CLIENT] Removed user({$client->get_user_id()}) \n";
+            }
         }
     }
     
@@ -136,8 +149,10 @@ class ClientManager {
     */
     private function attach_conn_to_client(server\client\WSClient $client, ConnectionInterface $conn) {
         $this->users->put($client->get_user_id(), $client);
+        $this->conn->attach($conn, $client->get_user_id());
+        
         $client->attach_conn($conn);
-        echo "Attached conn ({$conn->resourceId}) to ({$client->get_user_id()}) \n";
+        echo "[CLIENT] Attached conn ({$conn->resourceId}) to ({$client->get_user_id()}) \n";
     }
     
     /**
@@ -191,6 +206,7 @@ class ClientManager {
             $new_client = $this->users->get($new_user_id);
         }
         catch(\Exception $e) {
+            echo "[CLIENT] Creating new Client ({$new_user_id}) \n";
             $new_client = new server\client\WSClient($new_user_id);
         }
         

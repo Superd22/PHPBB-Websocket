@@ -7,11 +7,25 @@ use Ratchet\Http\HttpServer;
 
     require dirname(__DIR__) . '/vendor/autoload.php';
 
-    $ws = new WsServer(new EventServer());
+    $ev = new EventServer();
+    $loop   = \React\EventLoop\Factory::create();
 
-    $server = IoServer::factory(
-        new HttpServer($ws),
-        8080
+    $context = new \React\ZMQ\Context($loop);
+
+    $pull = $context->getSocket(\ZMQ::SOCKET_PULL);
+    $pull->bind('tcp://127.0.0.1:5555');
+    $pull->on('message', array($ev, 'onPhpbbPacket') );
+    
+    $webSock = new \React\Socket\Server($loop);
+    $webSock->listen(8080, '0.0.0.0');
+
+    $webServer  = new \Ratchet\Server\IoServer(
+        new HttpServer(
+            new WsServer(
+                $ev
+            )  
+        ),
+        $webSock
     );
 
-    $server->run();
+    $loop->run();
