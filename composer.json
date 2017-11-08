@@ -26,7 +26,8 @@
         "composer/installers": "~1.0",
         "cboden/ratchet": "0.4.*",
         "react/zmq": "0.2.*|0.3.*",
-        "php-ds/php-ds": "~1.1.1"
+        "php-ds/php-ds": "~1.1.1",
+        "ratchet/rfc6455": "^0.2.3"
     },
     "require-dev": {
         "phpbb/epv": "dev-master",

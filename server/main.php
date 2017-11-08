@@ -16,8 +16,8 @@ use Ratchet\Http\HttpServer;
     $pull->bind('tcp://127.0.0.1:5555');
     $pull->on('message', array($ev, 'onPhpbbPacket') );
     
-    $webSock = new \React\Socket\Server($loop);
-    $webSock->listen(8080, '0.0.0.0');
+    $webSock = new \React\Socket\Server("0.0.0.0:8080", $loop);
+    //$webSock->listen(8080, '0.0.0.0');
 
     $wsServer = new WsServer($ev);
     $wsServer->enableKeepAlive($loop);

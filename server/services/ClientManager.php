@@ -59,9 +59,17 @@ class ClientManager {
         $this->conn->attach($conn, 1);
         $u->attach_conn($conn);
         
-        $cookies = $conn->WebSocket->request->getCookies();
+        $cookiesstr = $conn->httpRequest->getHeader('cookie');
+        preg_match_all("/([^;= ]*)=([^;= ]*)/", $cookiesstr[0], $capturCookie, PREG_SET_ORDER);
         $user_id = $session_id = 1;
         
+        $cookies = [];
+        if($capturCookie) {
+            foreach($capturCookie as $c) {
+                $cookies[$c[1]] = $c[2];
+            }
+        }
+
         // Check cookie
         if(!empty($cookies[$config['cookie_name'].'_u'] && !empty($cookies[$config['cookie_name'].'_sid']))) {
             
