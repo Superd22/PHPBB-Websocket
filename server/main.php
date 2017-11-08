@@ -19,11 +19,13 @@ use Ratchet\Http\HttpServer;
     $webSock = new \React\Socket\Server($loop);
     $webSock->listen(8080, '0.0.0.0');
 
+    $wsServer = new WsServer($ev);
+    $wsServer->enableKeepAlive($loop);
+
+
     $webServer  = new \Ratchet\Server\IoServer(
         new HttpServer(
-            new WsServer(
-                $ev
-            )  
+            $wsServer
         ),
         $webSock
     );
